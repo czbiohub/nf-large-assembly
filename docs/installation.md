@@ -82,13 +82,13 @@ The process is very similar: running the pipeline with the option `-profile stan
 If running offline with Singularity, you'll need to download and transfer the Singularity image first:
 
 ```bash
-singularity pull --name nf-core-nf-large-assembly.simg shub://nf-core/nf-large-assembly
+singularity pull --name nf-large-assembly.simg shub://nf-core/nf-large-assembly
 ```
 
 Once transferred, use `-with-singularity` and specify the path to the image file:
 
 ```bash
-nextflow run /path/to/nf-core-nf-large-assembly -with-singularity nf-core-nf-large-assembly.simg
+nextflow run /path/to/nf-large-assembly -with-singularity nf-large-assembly.simg
 ```
 
 Remember to pull updated versions of the singularity image if you update the pipeline.

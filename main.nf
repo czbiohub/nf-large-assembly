@@ -164,7 +164,7 @@ def create_workflow_summary(summary) {
 
     def yaml_file = workDir.resolve('workflow_summary_mqc.yaml')
     yaml_file.text  = """
-    id: 'nf-core-nf-large-assembly-summary'
+    id: 'nf-large-assembly-summary'
     description: " - this information is collected when the pipeline is started."
     section_name: 'nf-core/nf-large-assembly Workflow Summary'
     section_href: 'https://github.com/nf-core/nf-large-assembly'

@@ -1,4 +1,4 @@
-name: nf-core-nf-large-assembly-1.0dev
+name: nf-large-assembly-1.0dev
 channels:
   - bioconda
   - conda-forge

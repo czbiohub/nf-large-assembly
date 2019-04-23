@@ -6,7 +6,7 @@ Bootstrap:docker
     VERSION 1.0dev
 
 %environment
-    PATH=/opt/conda/envs/nf-core-nf-large-assembly-1.0dev/bin:$PATH
+    PATH=/opt/conda/envs/nf-large-assembly-1.0dev/bin:$PATH
     export PATH
 
 %files

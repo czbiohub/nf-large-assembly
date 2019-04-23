@@ -66,14 +66,14 @@ Instead, you'll have to do this yourself manually first, transfer the image file
 First, pull the image file where you have an internet connection:
 
 ```bash
-singularity pull --name nf-core-nf-large-assembly.simg shub://nf-core/nf-large-assembly
+singularity pull --name nf-large-assembly.simg shub://nf-core/nf-large-assembly
 ```
 
 Then transfer this file and point the config file to the image:
 
 ```nextflow
 singularity.enabled = true
-process.container = "/path/to/nf-core-nf-large-assembly.simg"
+process.container = "/path/to/nf-large-assembly.simg"
 ```
 
 
