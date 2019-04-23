@@ -31,7 +31,7 @@ def helpMessage() {
       --singleEnd                   Specifies that the input is single end reads
 
     References                      If not specified in the configuration file or you wish to overwrite any of the references.
-      --fasta                       Path to Fasta reference
+      --fastas                      Path to Fasta reference, semicolon-separated, e.g. contigs1.fasta;contigs2.fasta
 
     Other options:
       --outdir                      The output directory where the results will be saved
@@ -220,6 +220,29 @@ process fastqc {
 }
 
 
+/*
+ * STEP 2 - trim reads - Fastp
+ */
+process fastp {
+    tag "$name"
+    publishDir "${params.outdir}/fastp", mode: 'copy',
+        saveAs: {filename -> filename.indexOf(".zip") > 0 ? "zips/$filename" : "$filename"}
+
+    input:
+    set val(name), file(read1_in), file(read2_in) from read_files_trimming
+
+    output:
+    file "*_fastp.{zip,html}" into fastp_results
+
+    script:
+    """
+    fastp -i $read1_in -I $read2_in \
+      -o $read1_out -O $read2_out \
+      -h ${name}_fastp.html \
+      -j ${name}_fastp.json
+    """
+}
+
 
 /*
  * STEP 2 - MultiQC
@@ -230,6 +253,7 @@ process multiqc {
     input:
     file multiqc_config
     file ('fastqc/*') from fastqc_results.collect()
+    file ('fastp/*') from fastp_results.collect()
     file ('software_versions/*') from software_versions_yaml
     file workflow_summary from create_workflow_summary(summary)
 
