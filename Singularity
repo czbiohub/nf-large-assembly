@@ -2,7 +2,7 @@ From:nfcore/base
 Bootstrap:docker
 
 %labels
-    DESCRIPTION Singularity image containing all requirements for the nf-core/nf-large-assembly pipeline
+    DESCRIPTION Singularity image containing all requirements for the czbiohub/nf-large-assembly pipeline
     VERSION 1.0dev
 
 %environment

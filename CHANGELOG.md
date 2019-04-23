@@ -1,4 +1,4 @@
-# nf-core/nf-large-assembly: Changelog
+# czbiohub/nf-large-assembly: Changelog
 
 ## v1.0dev - <date>
-Initial release of nf-core/nf-large-assembly, created with the [nf-core](http://nf-co.re/) template.
+Initial release of czbiohub/nf-large-assembly, created with the [czbiohub](http://nf-co.re/) template.

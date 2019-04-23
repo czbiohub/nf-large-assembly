@@ -1,5 +1,5 @@
 FROM nfcore/base
-LABEL description="Docker image containing all requirements for nf-core/nf-large-assembly pipeline"
+LABEL description="Docker image containing all requirements for czbiohub/nf-large-assembly pipeline"
 
 COPY environment.yml /
 RUN conda env create -f /environment.yml && conda clean -a
