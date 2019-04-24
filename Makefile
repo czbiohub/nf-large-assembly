@@ -1,6 +1,6 @@
 test_aws:
 	nextflow run main.nf \
-		--reads 'testing/*R{1,2}*_first1Mreads.fastq.gz' \
+		--reads 'testing/*R{1,2}*.fastq.gz' \
 		--outdir test-output \
 		-e.process.executor=awsbatch \
 		-e.process.queue=nextflow \
@@ -10,7 +10,7 @@ test_aws:
 
 test_local:
 	nextflow run main.nf \
-		--reads 'testing/*R{1,2}*_first1Mreads.fastq.gz' \
+		--reads 'testing/*R{1,2}*.fastq.gz' \
 		--outdir test-output \
 		-profile docker \
 		--minlength 135
