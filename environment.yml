@@ -7,3 +7,4 @@ dependencies:
   - fastqc=0.11.7
   - multiqc=1.6
   - fastp=0.20.0
+  - r-rmarkdown=0.9.5
