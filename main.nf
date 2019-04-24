@@ -31,7 +31,7 @@ def helpMessage() {
       --singleEnd                   Specifies that the input is single end reads
 
     References                      If not specified in the configuration file or you wish to overwrite any of the references.
-      --fastas                      Path to Fasta reference, semicolon-separated, e.g. contigs1.fasta;contigs2.fasta
+      --fasta                       Path to Fasta reference, comma-separated, e.g. contigs1.fasta,contigs2.fasta
 
     Other options:
       --outdir                      The output directory where the results will be saved
@@ -56,10 +56,11 @@ if (params.help){
 
 // Configurable variables
 params.name = false
-params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
 params.multiqc_config = "$baseDir/conf/multiqc_config.yaml"
 params.email = false
 params.plaintext_email = false
+
+fastas = params.fasta?.toString().tokenize(",")
 
 multiqc_config = file(params.multiqc_config)
 output_docs = file("$baseDir/docs/output.md")
@@ -280,7 +281,7 @@ process jellyfish {
               saveAs: { params.saveReference ? it : null }, mode: 'copy'
 
    input:
-   file fasta from fasta
+   each fasta from fastas
 
    output:
    file "BWAIndex" into bwa_index
@@ -304,7 +305,7 @@ process bwa {
     params.align
 
     input:
-    file index from bwa_index.first()
+    each file index from bwa_index.first()
     file reads from trimmed_reads_bwa
 
     output:
