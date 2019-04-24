@@ -245,50 +245,101 @@ process fastp {
 
 
 /*
- * STEP 2 - MultiQC
+ * STEP - k-mer counting with Jellyfish
  */
-process multiqc {
-    publishDir "${params.outdir}/MultiQC", mode: 'copy'
+process jellyfish {
+    tag "$reads"
+    publishDir "${params.outdir}/jellyfish", mode: 'copy'
 
     input:
-    file multiqc_config
-    file ('fastqc/*') from fastqc_results.collect()
-    file ('fastp/*') from fastp_results.collect()
-    file ('software_versions/*') from software_versions_yaml
-    file workflow_summary from create_workflow_summary(summary)
+    file reads from trimmed_reads_jellyfish
 
     output:
-    file "*multiqc_report.html" into multiqc_report
-    file "*_data"
+    file '*.jf' into jellyfish_db
+    file '*.hist' into jellifish_hist
 
     script:
-    rtitle = custom_runName ? "--title \"$custom_runName\"" : ''
-    rfilename = custom_runName ? "--filename " + custom_runName.replaceAll('\\W','_').replaceAll('_+','_') + "_multiqc_report" : ''
-    """
-    multiqc -f $rtitle $rfilename --config $multiqc_config .
-    """
-}
+    prefix = reads[0].toString() - ~/(_R1)?(_trimmed)?(_val_1)?(\.fq)?(\.fastq)?(\.gz)?$/
 
+    """
+    #Getting prefix
+    gunzip -c $reads | jellyfish count -o ${prefix}.jf  -m 25 -s 1000M -t ${task.cpus} -C /dev/fd/0
+    jellyfish histo -o ${prefix}_jf.hist -f ${prefix}.jf
+    """
+
+
+}
 
 
 /*
- * STEP 3 - Output Description HTML
+ * STEP - make BWA index
  */
-process output_documentation {
-    tag "$prefix"
-    publishDir "${params.outdir}/Documentation", mode: 'copy'
+ process makeBWAindex {
+   tag fasta
+   publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
+              saveAs: { params.saveReference ? it : null }, mode: 'copy'
+
+   input:
+   file fasta from fasta
+
+   output:
+   file "BWAIndex" into bwa_index
+
+   script:
+   """
+   bwa index -a bwtsw $fasta
+   mkdir BWAIndex && mv ${fasta}* BWAIndex
+   """
+}
+
+
+/*
+ * STEP - BWA
+ */
+process bwa {
+    tag "$reads"
+    publishDir "${params.outdir}/bwa", mode: 'copy'
+
+    when:
+    params.align
 
     input:
-    file output_docs
+    file index from bwa_index.first()
+    file reads from trimmed_reads_bwa
 
     output:
-    file "results_description.html"
+    file ('*.bam') into aligned
+    stdout into bwa_log
 
     script:
     """
-    markdown_to_html.r $output_docs results_description.html
+    f='$reads';f=(\$f);f=\${f[0]};f=\${f%.gz};f=\${f%.fastq};f=\${f%.fq};f=\${f%_val_1};f=\${f%_trimmed};f=\${f%_1};f=\${f%_R1}
+    bwa mem -t ${task.cpus} $index $reads |  samtools sort --threads $task.cpus - > \$f.bam
     """
 }
+
+/*
+ * STEP - QUALIMAP
+*/
+process qualimap {
+    tag "$reads"
+    publishDir "${params.outdir}/qualimap", mode: 'copy'
+
+    when:
+    params.align
+
+    input:
+    file bam from aligned
+
+    output:
+    file ('*_stats') into qualimap_result
+
+    script:
+    """
+    qualimap bamqc -nt 4 -bam $bam
+    """
+}
+
 
 
 
