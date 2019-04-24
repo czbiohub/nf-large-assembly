@@ -248,7 +248,7 @@ process fastp {
       --length_required ${params.minlength} \
       --thread ${task.cpus} \
       --merge \
-      --merged_out ${name}_fastp_merged.fastq.gz
+      --merged_out ${name}_fastp_merged.fastq.gz \
       --out1 ${name}_R1_fastp_trimmed.fastq.gz \
       --out2 ${name}_R2_fastp_trimmed.fastq.gz \
       -h ${name}_fastp.html \
