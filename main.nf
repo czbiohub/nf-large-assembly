@@ -29,6 +29,7 @@ def helpMessage() {
 
     Options:
       --singleEnd                   Specifies that the input is single end reads
+      --minlength                   Minimum length of reads after trimming, default 100
 
     References                      If not specified in the configuration file or you wish to overwrite any of the references.
       --fastas                      Path to Fasta reference, semicolon-separated, e.g. contigs1.fasta;contigs2.fasta
@@ -60,6 +61,7 @@ params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : 
 params.multiqc_config = "$baseDir/conf/multiqc_config.yaml"
 params.email = false
 params.plaintext_email = false
+params.minlength = 100
 
 multiqc_config = file(params.multiqc_config)
 output_docs = file("$baseDir/docs/output.md")
@@ -193,6 +195,7 @@ process get_software_versions {
     echo $workflow.nextflow.version > v_nextflow.txt
     fastqc --version > v_fastqc.txt
     multiqc --version > v_multiqc.txt
+    fastp --version > v_fastp.txt
     scrape_software_versions.py > software_versions_mqc.yaml
     """
 }
@@ -222,6 +225,8 @@ process fastqc {
 
 /*
  * STEP 2 - trim reads - Fastp
+1. Remove adapters, 4nt windows of Q20 or lower reads, and poly-G (for {Next,Nova}Seq chemistry)
+2. Merge overlapping paired-end reads
  */
 process fastp {
     tag "$name"
@@ -233,11 +238,19 @@ process fastp {
 
     output:
     file "*_fastp.{zip,html}" into fastp_results
+    file "${name}_R1_fastp_trimmed.fastq.gz" into read1_out
+    file "${name}_R2_fastp_trimmed.fastq.gz" into read2_out
+    file "${name}_fastp_merged.fastq.gz" into reads_merged
 
     script:
     """
-    fastp -i $read1_in -I $read2_in \
-      -o $read1_out -O $read2_out \
+    fastp --in1 $read1_in --in2 $read2_in \
+      --length_required ${params.minlength} \
+      --thread ${task.cpus} \
+      --merge \
+      --merged_out ${name}_fastp_merged.fastq.gz
+      --out1 ${name}_R1_fastp_trimmed.fastq.gz \
+      --out2 ${name}_R2_fastp_trimmed.fastq.gz \
       -h ${name}_fastp.html \
       -j ${name}_fastp.json
     """
@@ -245,7 +258,7 @@ process fastp {
 
 
 /*
- * STEP 2 - MultiQC
+ * STEP 3 - MultiQC
  */
 process multiqc {
     publishDir "${params.outdir}/MultiQC", mode: 'copy'
@@ -272,7 +285,7 @@ process multiqc {
 
 
 /*
- * STEP 3 - Output Description HTML
+ * STEP 4 - Output Description HTML
  */
 process output_documentation {
     tag "$prefix"
