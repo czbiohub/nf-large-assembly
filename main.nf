@@ -247,6 +247,7 @@ process fastp {
     fastp --in1 $read1 --in2 $read2 \
       --length_required ${params.minlength} \
       --thread ${task.cpus} \
+      --overrepresentation_analysis \
       --merge \
       --merged_out ${name}_fastp_merged.fastq.gz \
       --out1 ${name}_R1_fastp_trimmed.fastq.gz \
