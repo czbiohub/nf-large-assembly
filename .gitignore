@@ -5,3 +5,7 @@ results/
 .DS_Store
 tests/test_data
 test-output/
+
+
+# Scratch file for testing nextflow commands
+scratch.nf
