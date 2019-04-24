@@ -65,11 +65,6 @@ fastas = params.fasta?.toString().tokenize(",")
 multiqc_config = file(params.multiqc_config)
 output_docs = file("$baseDir/docs/output.md")
 
-// Validate inputs
-if ( params.fasta ){
-    fasta = file(params.fasta)
-    if( !fasta.exists() ) exit 1, "Fasta file not found: ${params.fasta}"
-}
 // AWSBatch sanity checking
 if(workflow.profile == 'awsbatch'){
     if (!params.awsqueue || !params.awsregion) exit 1, "Specify correct --awsqueue and --awsregion parameters on AWSBatch!"
