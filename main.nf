@@ -116,7 +116,7 @@ if( workflow.profile == 'awsbatch') {
      }
  } else {
      Channel
-         .fromFilePairs( params.reads, size: params.singleEnd ? 1 : 2 )
+         .fromFilePairs( params.reads, size: params.singleEnd ? 1 : 2 , flat: true)
          .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nIf this is single-end data, please specify --singleEnd on the command line." }
          .into { read_files_fastqc; read_files_trimming }
  }
@@ -211,14 +211,14 @@ process fastqc {
         saveAs: {filename -> filename.indexOf(".zip") > 0 ? "zips/$filename" : "$filename"}
 
     input:
-    set val(name), file(reads) from read_files_fastqc
+    set val(name), file(read1), file(read2) from read_files_fastqc
 
     output:
     file "*_fastqc.{zip,html}" into fastqc_results
 
     script:
     """
-    fastqc -q $reads
+    fastqc -q $read1 $read2
     """
 }
 
@@ -234,17 +234,17 @@ process fastp {
         saveAs: {filename -> filename.indexOf(".zip") > 0 ? "zips/$filename" : "$filename"}
 
     input:
-    set val(name), file(read1_in), file(read2_in) from read_files_trimming
+    set val(name), file(read1), file(read2) from read_files_trimming
 
     output:
     file "*_fastp.{zip,html}" into fastp_results
-    file "${name}_R1_fastp_trimmed.fastq.gz" into read1_out
-    file "${name}_R2_fastp_trimmed.fastq.gz" into read2_out
+    file "${name}_R1_fastp_trimmed.fastq.gz" into read1_trimmed
+    file "${name}_R2_fastp_trimmed.fastq.gz" into read2_trimmed
     file "${name}_fastp_merged.fastq.gz" into reads_merged
 
     script:
     """
-    fastp --in1 $read1_in --in2 $read2_in \
+    fastp --in1 $read1 --in2 $read2 \
       --length_required ${params.minlength} \
       --thread ${task.cpus} \
       --merge \
